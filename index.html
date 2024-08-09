@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Babylon.js Shape Key Extraction</title>
+    <script src="plugin/babylon.js"></script>
+    <script src="plugin/babylon.glTF2FileLoader.js"></script>
+    <style>
+        
+/*==================== Section Four body modeler css start============= */
+:root{
+    --slider-handle-size: 14px;
+    --slider-handle-border-radius: 50px;
+    --slider-handle-margin-top: -4px;
+    --slider-track-height: 6px;
+    --slider-track-border-radius: 4px;
+    --orange: #FFA500;
+
+}
+.section_four {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 10px;
+    width: 100%;
+    background: var(--color-white);
+}
+
+.section_four .modeler_container {
+    width: 100%;
+    height: 100vh;
+}
+
+.section_four .modeler_container .body_modeler {
+    text-align: center;
+}
+
+.section_four .modeler_container .body_modeler h1 {
+    color: var(--color-primary);
+    font-size: 2.5rem;
+}
+
+.section_four .modeler_container .body_modeler h5 {
+    color: #ce5f00;
+    font-size: 1.5rem;
+    font-weight: 200;
+    text-align: center;
+}
+
+
+/* =============== Modeler Controler ===============*/
+
+.section_four .modeler_controller {
+    height: 100vh;
+    border: solid 2px var(--color-primary);
+}
+
+.section_four .modeler_controller p {
+    font-size: 14px;
+    text-align: center;
+    padding: 5px;
+    margin-top: 10px;
+    color: var(--color-primary);
+}
+
+.feature_group_wrap {
+    display: flex;
+    padding: 2px 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.feature_group_wrap label {
+    flex-basis: 177px;
+}
+
+.tick-slider {
+    position: relative;
+    width: 100%;
+}
+
+.tick-slider-value {
+    position: absolute;
+    top: 0;
+    font-weight: bold;
+    color: var(--blue);
+    border-radius: var(--slider-handle-border-radius);
+    display: none;
+}
+
+.tick-slider-value>div {
+    animation: bulge 0.3s ease-out;
+}
+
+.tick-slider-background,
+.tick-slider-progress,
+.tick-slider-tick-container {
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    height: var(--slider-track-height);
+    pointer-events: none;
+    border-radius: var(--slider-track-border-radius);
+    background-color: #dee2e6;
+    z-index: 0;
+}
+
+.tick-slider-background {
+    width: 100%;
+    background-color: var(--light-gray);
+    background-color: #dee2e6;
+}
+
+.tick-slider-progress {
+    background-color: var(--yellow);
+    z-index: 1;
+}
+
+.tick-slider-tick-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* padding: 0 calc(var(--slider-handle-size) / 2);*/
+    background-color: #dee2e6;
+}
+
+.tick-slider-tick {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: #900;
+}
+
+input[type="range"] {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    width: calc(100% + 10px);
+    background: transparent;
+    outline: none;
+    margin: 10px 0;
+}
+
+@-moz-document url-prefix() {
+    input[type="range"] {
+        position: relative;
+        --webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+        outline: none;
+        margin: -5px -5px;
+        z-index: 100;
+    }
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    border: none;
+}
+
+input[type="range"]:focus {
+    outline: none;
+}
+
+input[type="range"]::-moz-focus-outer {
+    border: 0;
+}
+
+
+/*
+
+    HANDLE
+
+*/
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    width: var(--slider-handle-size);
+    height: var(--slider-handle-size);
+    background: #900;
+    border-radius: var(--slider-handle-border-radius);
+    cursor: pointer;
+    -webkit-transform: scale(1);
+    text-align: center;
+    transform: scale(1);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+input[type="range"]:hover::-webkit-slider-thumb,
+input[type="range"]:focus::-webkit-slider-thumb {
+    transform: scale(1.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    width: var(--slider-handle-size);
+    height: var(--slider-handle-size);
+    background: var(--orange);
+    border: none;
+    border-radius: var(--slider-handle-border-radius);
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+input[type="range"]:hover::-moz-range-thumb,
+input[type="range"]:focus::-moz-range-thumb {
+    transform: scale(1.2);
+}
+
+
+/*
+
+    TRACK
+
+*/
+
+input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: var(--slider-track-height);
+    cursor: pointer;
+    background: none;
+    border-radius: var(--slider-track-border-radius);
+}
+
+input[type="range"]::-moz-range-track {
+    width: 100%;
+    height: var(--slider-track-height);
+    cursor: pointer;
+    background: none;
+    border-radius: var(--slider-track-border-radius);
+}
+
+input[type="range"]:focus::-webkit-slider-runnable-track {
+    background: none;
+}
+
+input[type="range"]:active::-webkit-slider-runnable-track {
+    background: none;
+}
+
+.body_modeler_canvases {
+    position: relative;
+    top: -92px;
+    scale: 0.9;
+}
+
+.canvas_head,
+.canvas_neck,
+.canvas_breast,
+.canvas_shoulders,
+.canvas_stomach,
+.canvas_legs {
+    position: absolute;
+    right: 50%;
+    transform: translate(50%, -50%);
+    -webkit-transform: translate(50%, -50%);
+    -moz-transform: translate(50%, -50%);
+    -ms-transform: translate(50%, -50%);
+    -o-transform: translate(50%, -50%);
+}
+
+.canvas_head {
+    top: 222px;
+    width: 500px;
+    height: 100px;
+    z-index: 1000;
+}
+
+.canvas_head_rear {
+    top: 224px;
+    width: 500px;
+    height: 100px;
+    z-index: 1000;
+}
+
+.canvas_neck {
+    top: 271px;
+    width: 500px;
+    height: 100px;
+    z-index: 900;
+}
+
+.canvas_neck_rear {
+    top: 271px;
+    width: 500px;
+    height: 100px;
+    z-index: 900;
+}
+
+.canvas_shoulders {
+    top: 364px;
+    width: 500px;
+    height: 236px;
+    z-index: 500;
+}
+
+.canvas_shoulders_rear {
+    top: 364px;
+    width: 500px;
+    height: 236px;
+    z-index: 500;
+}
+
+.canvas_breast {
+    top: 347px;
+    width: 500px;
+    height: 195px;
+    z-index: 800;
+}
+
+.canvas_stomach {
+    top: 398px;
+    width: 500px;
+    height: 266px;
+    z-index: 200;
+}
+
+.canvas_back {
+    top: 401px;
+    width: 500px;
+    height: 266px;
+    z-index: 200;
+}
+
+.canvas_legs {
+    top: 554px;
+    width: 500px;
+    height: 460px;
+    z-index: 1px;
+}
+
+.canvas_bottom {
+    top: 561px;
+    width: 500px;
+    height: 460px;
+    z-index: 1px;
+}
+
+.body_modeler_action_btn {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px;
+}
+
+
+/*==================== Section Four body modeler css End============= */
+    </style>
+</head>
+
+<body>
+    <section class="section" id="bodyModelerSection" >
+        <div class="section_four">
+            <div class="modeler_controller">
+                <p>Move the sliders of each body feature to reshape the model. Click "Body Rear" to change the rear side of your model.</p>
+
+            
+                <div class="controls" style="display: block;">
+                    <div class="front-controls-full m-modeller">
+
+                        <div class="head_and_neck">
+                            <!-- Head Group -->
+                            <div class="feature_group_wrap" id="head-shape">
+                                <label for="slider-head-shape">Head Shape:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_8" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        
+                                    </div>
+                                    <input id="slider-head-shape" class="tick-slider-input slide-full topmost" type="range" min="0" max="2" step="1" value="0" data-tick-step="1" data-tick-id="sliderTicks_8" name="head_shape_val" />
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap ubiquitous" id="head-size">
+                                <label for="slider-head-size">Head Size:</label>
+                                <div class="tick-slider">
+
+                                    <div id="sliderTicks_9" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        
+                                    </div>
+                                    <input id="slider-head-size" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.25" value="0" data-tick-step="1" data-tick-id="sliderTicks_9" name="head_size_val" />
+                                </div>
+                            </div>
+
+                            <!-- Neck Group -->
+                            <div class="feature_group_wrap ubiquitous" id="neck-height">
+                                <label for="slider-neck-height">Neck Height:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_11" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-neck-height" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.25" value="0" data-tick-step="1" data-tick-id="sliderTicks_11" name="neck_height_val" />
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap ubiquitous" id="neck-width">
+                                <label for="name">Neck Width:</label>
+                                <div class="tick-slider">
+                                    <div class="tick-slider-value-container">
+
+                                        <div id="sliderTicks_12" class="tick-slider-tick-container">
+                                            <span class="tick-slider-tick"></span>
+                                            <span class="tick-slider-tick"></span>
+                                            <span class="tick-slider-tick"></span>
+                                          
+                                        </div>
+                                        <input id="slider-neck-width" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.5" value="0" data-tick-step="1" data-tick-id="sliderTicks_12" name="neck_width_val" />
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap remove" id="trapezoidal-shape">
+                                <label for="name">Neck Shape:</label>
+                                <div class="tick-slider">
+                                    <div class="tick-slider-value-container">
+
+                                        <div id="sliderTicks_12" class="tick-slider-tick-container">
+                                            <span class="tick-slider-tick"></span>
+                                            <span class="tick-slider-tick"></span>
+                                        </div>
+                                        <input id="slider-trap-shape" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="1" value="0" data-tick-step="1" data-tick-id="sliderTicks_12" name="neck_width_val" />
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap remove" id="trapezoidal-shape">
+                                <label for="name">Neck Rolls:</label>
+                                <div class="tick-slider">
+                                    <div class="tick-slider-value-container">
+
+                                        <div id="sliderTicks_18" class="tick-slider-tick-container">
+                                            <span class="tick-slider-tick"></span>
+                                            <span class="tick-slider-tick"></span>
+                                        </div>
+                                        <input id="slider-trap-shape" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="1" value="0" data-tick-step="1" data-tick-id="sliderTicks_12" name="neck_width_val" />
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="shoulder_and_arm d_none_md">
+                            <!-- Shoulders Group -->
+                            <div class="feature_group_wrap ubiquitous" id="shoulder-height">
+                                <label for="slider-shoulder-height">Shoulder Height:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_13" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-shoulder-height" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.5" value="0" data-tick-step="1" data-tick-id="sliderTicks_13" name="shoulder_height_val" />
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap ubiquitous" id="shoulder-width">
+                                <label for="slider-shoulder-width">Shoulder width:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_14" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-shoulder-width" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.125" value="0" data-tick-step="1" data-tick-id="sliderTicks_14" name="shoulder_width_val" />
+                                </div>
+                            </div>
+                            <!--   Arm  group -->
+                            <div class="feature_group_wrap" id="arm-size">
+                                <label for="slider-arm-size">Arm Size:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_15" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-arm-size" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.334" value="0" data-tick-step="1" data-tick-id="sliderTicks_15" name="arm_size_val" />
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap" id="arm-length">
+                                <label for="slider-arm-length">Arm Length:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_10" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-arm-length" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="1" value="0" data-tick-step="1" data-tick-id="sliderTicks_10" name="arm_length_val" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="breast_and_torso d_none_md">
+                            <!-- Torso Group -->
+                            <div class="feature_group_wrap" id="breast-size">
+                                <label for="slider-breast-size">Breast Size:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_1" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-breast-size" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.125" value="0" data-tick-step="1" data-tick-id="sliderTicks_1" name="breast_shape_val" />
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap" id="stomach-shape">
+                                <label for="slider-stomach-shape">Stomach Shape:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_2" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-stomach-shape" class="tick-slider-input slide-full topmost" type="range" min="0" max="5" step="1" value="0" data-tick-step="1" data-tick-id="sliderTicks_2" name="stomach_shape_val" />
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap" id="torso-height">
+                                <label for="slider-torso-height">Torso Height:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_3" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-torso-height" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.5" value="0" data-tick-step="1" data-tick-id="sliderTicks_3" name="torso_height_val" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="leg_and_hip d_none_md">
+                            <!-- Leg Group -->
+                            <div class="feature_group_wrap" id="leg-size">
+                                <label for="slider-leg-size">Leg Size:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_4" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-leg-size" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.25" value="0" data-tick-step="1" data-tick-id="sliderTicks_4" name="leg_size_val" />
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap" id="hip-size">
+                                <label for="slider-hip-size">Hip Size:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_6" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-hip-size" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.5" value="0" data-tick-step="1" data-tick-id="sliderTicks_6" name="hip_size_val" />
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap" id="crotch-height">
+                                <label for="slider-crotch-height">Crotch Height:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_5" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                    </div>
+                                    <input id="slider-crotch-height" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="0.5" value="0" data-tick-step="1" data-tick-id="sliderTicks_5" name="crotch_height_val" />
+                                </div>
+                            </div>
+
+                            <div class="feature_group_wrap" id="bottom-shape">
+                                <label for="slider-bottom-shape">Bottom Shape:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_6" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                      
+                                    </div>
+                                    <input id="slider-bottom-shape" class="tick-slider-input slide-full topmost" type="range" min="0" max="5" step="1" value="0" data-tick-step="1" data-tick-id="sliderTicks_6" name="bottom_shape_val" />
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap" id="bottom-width">
+                                <label for="slider-bottom-width">Bottom Width:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_19" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                       
+                                      
+                                    </div>
+                                    <input id="slider-bottom-width" class="tick-slider-input slide-full topmost" type="range" min="0" max="1" step="1" value="0" data-tick-step="1" data-tick-id="sliderTicks_19" name="bottom_width_val" />
+                                </div>
+                            </div>
+                            <div class="feature_group_wrap" id="bottom-back">
+                                <label for="slider-bottom-back">Bottom Back:</label>
+                                <div class="tick-slider">
+                                    <div id="sliderTicks_20" class="tick-slider-tick-container">
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
+                                      
+                                    </div>
+                                    <input id="slider-bottom-back" class="tick-slider-input slide-full topmost" type="range" min="0" max="5" step="1" value="0" data-tick-step="1" data-tick-id="sliderTicks_6" name="hip_size_val" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="body_modeler_action_btn">
+                        <button style="cursor: pointer; padding: 10px;">Body Rear</button>
+                        <button style="cursor: pointer; padding: 10px;" onclick="goToRegisterSection('#registationSection')">Submit</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modeler_container">
+                <div class="body_modeler modeler-heading">
+                    <h1>ShapeMe® Body Modeler</h1>
+                    <h5>by Mirror Me Fashion</h5>
+                    <div class="body_modeler_canvases">
+                        <canvas id="renderCanvas" style="height: 100vh; width: 100%;"></canvas>
+                    </div>
+               
+
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+
+    <canvas id="renderCanvas" style="width: 100%; height: 100vh;"></canvas>
+    <script>
+        const shapeKeys = {}
+            // Get the canvas element
+        const canvas = document.getElementById('renderCanvas');
+
+        // Generate the Babylon.js engine
+        const engine = new BABYLON.Engine(canvas, true);
+
+        // Create a basic Babylon.js scene
+        const scene = new BABYLON.Scene(engine);
+        // Create an ArcRotateCamera
+        var camera = new BABYLON.ArcRotateCamera("myCamera", Math.PI / 2, Math.PI / 4, 5, new BABYLON.Vector3(0, 0, 1), scene);
+        camera.attachControl(canvas, true);
+
+        // Disable mouse wheel zooming
+        camera.inputs.removeByType("ArcRotateCameraMouseWheelInput");
+        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 1), scene);
+
+        // Function to load the .glb file dynamically
+        function loadGLBFile(url) {
+            BABYLON.SceneLoader.Append("", url, scene, function(scene) {
+                scene.createDefaultCameraOrLight(true, true, true);
+                scene.activeCamera.alpha += Math.PI;
+
+                console.log("Model file loaded successfully");
+
+                // Extract animation keyframes
+                scene.animationGroups.forEach(animationGroup => {
+                    console.log(`Animation Group: ${animationGroup.name}`);
+
+                    animationGroup.targetedAnimations.forEach(targetedAnimation => {
+                        const animation = targetedAnimation.animation;
+                        console.log(`Target: ${targetedAnimation.target.name}`);
+                        console.log(`Property: ${animation.targetProperty}`);
+
+                        animation.getKeys().forEach(key => {
+                            console.log(`Frame: ${key.frame}, Value: ${key.value}`);
+                        });
+                    });
+                });
+
+                // Extract shape keys (morph targets)
+                let morphTargetsFound = false;
+                scene.meshes.forEach(mesh => {
+                    console.log(`Mesh: ${mesh.name}`);
+                    console.log(`Morph Target Manager: ${mesh.morphTargetManager}`);
+
+                    if (mesh.morphTargetManager) {
+                        morphTargetsFound = true;
+                        const morphTargetManager = mesh.morphTargetManager;
+                        console.log(`Number of Morph Targets: ${morphTargetManager.numTargets}`);
+                        for (let i = 0; i < morphTargetManager.numTargets; i++) {
+                            const morphTarget = morphTargetManager.getTarget(i);
+                            console.log(`Morph Target: ${morphTarget.name}, Influence: ${morphTarget.influence}`);
+                            storeShapeKeys(morphTarget.name, morphTarget.influence);
+                        }
+                    }
+                });
+
+                if (!morphTargetsFound) {
+                    console.log("No morph targets found in the meshes.");
+                }
+            }, null, function(scene, message, exception) {
+                console.error("Error loading model file:", message, exception);
+            });
+        }
+
+        // Function to dynamically change morph target values
+        function updateMorphTarget(meshName, targetName, newInfluence) {
+            const mesh = scene.getMeshByName(meshName);
+            if (mesh && mesh.morphTargetManager) {
+                const morphTargetManager = mesh.morphTargetManager;
+                for (let i = 0; i < morphTargetManager.numTargets; i++) {
+                    const morphTarget = morphTargetManager.getTarget(i);
+                    if (morphTarget.name === targetName) {
+                        morphTarget.influence = newInfluence;
+                        console.log(`Updated Morph Target: ${morphTarget.name}, New Influence: ${morphTarget.influence}`);
+                    }
+                }
+            }
+        }
+
+        // Load the .glb file dynamically
+        const glbUrl = 'female_average.glb'; // Replace with your dynamic URL
+        loadGLBFile(glbUrl);
+
+
+        // Run the render loop
+        engine.runRenderLoop(function() {
+            scene.render();
+        });
+
+        // Resize the canvas when the window is resized
+        window.addEventListener('resize', function() {
+            engine.resize();
+        });
+
+        function storeShapeKeys(key, value) {
+            // Store the user response in the userResponses object
+            shapeKeys[key] = value;
+        }
+    // Get references to all the sliders
+const sliders = {
+    headShape: document.getElementById('slider-head-shape'),
+    headSize: document.getElementById('slider-head-size'),
+    neckHeight: document.getElementById('slider-neck-height'),
+    neckWidth: document.getElementById('slider-neck-width'),
+    shoulderHeight: document.getElementById('slider-shoulder-height'),
+    shoulderWidth: document.getElementById('slider-shoulder-width'),
+    armSize: document.getElementById('slider-arm-size'),
+    armLength: document.getElementById('slider-arm-length'),
+    breastSize: document.getElementById('slider-breast-size'),
+    torsoHeight: document.getElementById('slider-torso-height'),
+    crotchHeight: document.getElementById('slider-crotch-height'),
+    legSize: document.getElementById('slider-leg-size'),
+    hipSize: document.getElementById('slider-hip-size'),
+    stomachShape: document.getElementById('slider-stomach-shape'),
+    bottomShape: document.getElementById('slider-bottom-shape'),
+    bottomWidth: document.getElementById('slider-bottom-width')
+};
+
+
+// Event listener for head shape slider
+sliders.headShape.addEventListener('change', function () {
+    // Update head shape morph targets based on slider value
+    const shapes = ['oblong', 'round'];
+    shapes.forEach((shape, index) => {
+        const value = (sliders.headShape.value == index + 1) ? 1 : 0;
+        updateMorphTarget('Shape_average_petite:High-poly_primitive0', `shape-head-${shape}`, value);
+        updateMorphTarget('Shape_average_petite:High-poly_primitive1', `shape-head-${shape}`, value);
+        updateMorphTarget('Shape_average_petite:High-poly_primitive2', `shape-head-${shape}`, value);
+    });
+  
+});
+
+// Event listener for stomach shape slider
+sliders.stomachShape.addEventListener('change', function () {
+    // Update stomach shape morph targets based on slider value
+    const shapes = ['-curvy', 'MTstomach-shape-MT', 'rectangle', 'pouch','spoon'];
+    shapes.forEach((shape, index) => {
+        const value = (sliders.stomachShape.value == index + 1) ? 1 : 0;
+        console.log(index + 1);
+        updateMorphTarget('Shape_average_petite:High-poly_primitive0', `shape-stomach-${shape}`, value);
+        updateMorphTarget('Shape_average_petite:High-poly_primitive1', `shape-stomach-${shape}`, value);
+        updateMorphTarget('Shape_average_petite:High-poly_primitive2', `shape-stomach-${shape}`, value);
+    });
+});
+
+// Event listener for bottom shape slider
+sliders.bottomShape.addEventListener('change', function () {
+    // Update bottom shape morph targets based on slider value
+    const shapes = ['round', 'square', 'inverted', 'flat', 'heart'];
+    
+    shapes.forEach((shape, index) => {
+        const value = (sliders.bottomShape.value == index + 1) ? 1 : 0;
+        console.log(index + 1);
+        updateMorphTarget('Shape_average_petite:High-poly_primitive0', `bottom-shape-${shape}`, value);
+        updateMorphTarget('Shape_average_petite:High-poly_primitive1', `bottom-shape-${shape}`, value);
+        updateMorphTarget('Shape_average_petite:High-poly_primitive2', `bottom-shape-${shape}`, value);
+    });
+});
+
+// Helper function to add change event listener for sliders
+function addChangeListener(slider, morphName) {
+    slider.addEventListener('change', function () {
+        updateMorphTarget('Shape_average_petite:High-poly_primitive0', morphName, slider.value);
+        updateMorphTarget('Shape_average_petite:High-poly_primitive1', morphName, slider.value);
+        updateMorphTarget('Shape_average_petite:High-poly_primitive2', morphName, slider.value);
+    });
+}
+
+// Adding change event listeners for other sliders
+addChangeListener(sliders.headSize, 'head-size');
+addChangeListener(sliders.neckHeight, 'neck-height');
+addChangeListener(sliders.neckWidth, 'neck-girth');
+addChangeListener(sliders.shoulderHeight, 'shoulder-height');
+addChangeListener(sliders.shoulderWidth, 'shoulder-width');
+addChangeListener(sliders.armSize, 'arm-size');
+addChangeListener(sliders.armLength, 'arms-distended');
+addChangeListener(sliders.breastSize, 'breasts');
+addChangeListener(sliders.torsoHeight, 'torso-distended');
+addChangeListener(sliders.crotchHeight, 'crotch-height');
+addChangeListener(sliders.legSize, 'leg-size');
+addChangeListener(sliders.hipSize, 'hips-size');
+addChangeListener(sliders.bottomWidth, 'bottom-width');
+
+    </script>
+
+</body>
+
+</html>
