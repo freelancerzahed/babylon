@@ -672,9 +672,9 @@
                             </div>
                         </div>
                     </div>
-
+              
                     <div class="body_modeler_action_btn">
-                        <button style="cursor: pointer; padding: 10px;">Body Rear</button>
+                        <button  id="bodyRearBtn" style="cursor: pointer;">Body Rear</button>
                         <button style="cursor: pointer; padding: 10px;"
                             onclick="goToRegisterSection('#registationSection')">Submit</button>
                     </div>
@@ -685,7 +685,7 @@
                     <h1>ShapeMe® Body Modeler</h1>
                     <h5>by Mirror Me Fashion</h5>
                     <div class="body_modeler_canvases">
-                        <canvas id="renderCanvas" style="height: 100vh; width: 100%;"></canvas>
+                        <canvas id="renderCanvas" style="height: 100vh; max-width: 100%;"></canvas>
                     </div>
 
 
@@ -696,105 +696,170 @@
 
     </section>
 
-    <canvas id="renderCanvas" style="width: 100%; height: 100vh;"></canvas>
+
     <script>
+
         const shapeKeys = {}
-        // Get the canvas element
-        const canvas = document.getElementById('renderCanvas');
 
-        // Generate the Babylon.js engine
-        const engine = new BABYLON.Engine(canvas, true);
+//         if (BABYLON.Engine.isSupported()) {
+//     const canvas = document.getElementById('renderCanvas');
+//     const engine = new BABYLON.Engine(canvas, true);
+//     // Rest of your code...
+// } else {
+//     alert("WebGL is not supported on your device or browser.");
+// }
 
-        // Create a basic Babylon.js scene
-        const scene = new BABYLON.Scene(engine);
-        // Create an ArcRotateCamera
-        // Create an ArcRotateCamera
-        var camera = new BABYLON.ArcRotateCamera("myCamera", Math.PI / 2, Math.PI / 4, 5, new BABYLON.Vector3(0, 0, 1), scene);
-        camera.attachControl(canvas, true);
+        
+ // Initialize Babylon.js
+const canvas = document.getElementById('renderCanvas');
+const engine = new BABYLON.Engine(canvas, true);
+const scene = new BABYLON.Scene(engine);
 
-        // Disable mouse wheel zooming
-        camera.inputs.removeByType("ArcRotateCameraMouseWheelInput");
-        // Create a light
-        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 1), scene);
 
-        // Function to load the .glb file dynamically
-        function loadGLBFile(url) {
-            BABYLON.SceneLoader.Append("", url, scene, function (scene) {
-                scene.createDefaultCameraOrLight(true, true, true);
-                scene.activeCamera.alpha += Math.PI;
+if (BABYLON.Engine.isSupported()) {
+  
+    // Rest of your code...
+} else {
+    alert("WebGL is not supported on your device or browser.");
+}
 
-                console.log("Model file loaded successfully");
+// Custom camera class without zoom and rotation
+class NoZoomCamera extends BABYLON.ArcRotateCamera {
+    constructor(name, alpha, beta, radius, target, scene) {
+        super(name, alpha, beta, radius, target, scene);
+        this.inputs.removeByType("ArcRotateCameraMouseWheelInput");
+        this.inputs.removeByType("ArcRotateCameraPointersInput");
+    }
+}
 
-                // Extract animation keyframes
-                scene.animationGroups.forEach(animationGroup => {
-                    console.log(`Animation Group: ${animationGroup.name}`);
+// Set up the camera
+const camera = new NoZoomCamera("noZoomCamera", Math.PI / 2, Math.PI / 2, 90, new BABYLON.Vector3(0, 30, 0), scene);
+// camera.attachControl(canvas, true);
+// camera.lowerRadiusLimit = camera.upperRadiusLimit = camera.radius;
 
-                    animationGroup.targetedAnimations.forEach(targetedAnimation => {
-                        const animation = targetedAnimation.animation;
-                        console.log(`Target: ${targetedAnimation.target.name}`);
-                        console.log(`Property: ${animation.targetProperty}`);
+// Create lighting
+new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 1), scene);
 
-                        animation.getKeys().forEach(key => {
-                            console.log(`Frame: ${key.frame}, Value: ${key.value}`);
-                        });
-                    });
-                });
+// Load the .glb file and process the model
+function loadGLBFile(url) {
+    BABYLON.SceneLoader.Append("", url, scene, function (scene) {
+        console.log("Model file loaded successfully");
 
-                // Extract shape keys (morph targets)
-                let morphTargetsFound = false;
-                scene.meshes.forEach(mesh => {
-                    console.log(`Mesh: ${mesh.name}`);
-                    console.log(`Morph Target Manager: ${mesh.morphTargetManager}`);
-
-                    if (mesh.morphTargetManager) {
-                        morphTargetsFound = true;
-                        const morphTargetManager = mesh.morphTargetManager;
-                        console.log(`Number of Morph Targets: ${morphTargetManager.numTargets}`);
-                        for (let i = 0; i < morphTargetManager.numTargets; i++) {
-                            const morphTarget = morphTargetManager.getTarget(i);
-                            console.log(`Morph Target: ${morphTarget.name}, Influence: ${morphTarget.influence}`);
-                            storeShapeKeys(morphTarget.name, morphTarget.influence);
-                        }
-                    }
-                });
-
-                if (!morphTargetsFound) {
-                    console.log("No morph targets found in the meshes.");
-                }
-            }, null, function (scene, message, exception) {
-                console.error("Error loading model file:", message, exception);
+        // Process animations and morph targets
+        scene.animationGroups.forEach(group => {
+            console.log(`Animation Group: ${group.name}`);
+            group.targetedAnimations.forEach(({ target, animation }) => {
+                console.log(`Target: ${target.name}, Property: ${animation.targetProperty}`);
+                animation.getKeys().forEach(key => console.log(`Frame: ${key.frame}, Value: ${key.value}`));
             });
-        }
+        });
 
-        // Function to dynamically change morph target values
-        function updateMorphTarget(meshName, targetName, newInfluence) {
-            const mesh = scene.getMeshByName(meshName);
-            if (mesh && mesh.morphTargetManager) {
-                const morphTargetManager = mesh.morphTargetManager;
-                for (let i = 0; i < morphTargetManager.numTargets; i++) {
-                    const morphTarget = morphTargetManager.getTarget(i);
-                    if (morphTarget.name === targetName) {
-                        morphTarget.influence = newInfluence;
-                        console.log(`Updated Morph Target: ${morphTarget.name}, New Influence: ${morphTarget.influence}`);
-                    }
+        let morphTargetsFound = false;
+        scene.meshes.forEach(mesh => {
+            const model = scene.getMeshByName(mesh.name);
+if (model) {
+    // model.rotation = new BABYLON.Vector3(30, 0, 0);
+
+    const bodyRearBtn = document.getElementById("bodyRearBtn");
+    if (bodyRearBtn) {
+        bodyRearBtn.addEventListener('click', () => {
+            // Toggle between 0 and 180 degrees
+            model.rotation.y = model.rotation.y === 0 ? BABYLON.Tools.ToRadians(180) : 0;
+        });
+    } else {
+        console.error('Element with ID "bodyRearBtn" not found.');
+    }
+
+
+    // script.js File 
+  
+      
+    // Set the pivot point and position
+   
+    // model.position = new BABYLON.Vector3(0, -30, 0);
+    model.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+   
+  
+
+}
+
+
+      console.log(`Mesh: ${mesh.name}`);
+            if (mesh.morphTargetManager) {
+                morphTargetsFound = true;
+                const manager = mesh.morphTargetManager;
+                console.log(`Number of Morph Targets: ${manager.numTargets}`);
+                for (let i = 0; i < manager.numTargets; i++) {
+                    const target = manager.getTarget(i);
+                    console.log(`Morph Target: ${target.name}, Influence: ${target.influence}`);
+                    storeShapeKeys(target.name, target.influence);
                 }
             }
+        });
+
+        if (!morphTargetsFound) {
+            console.log("No morph targets found in the meshes.");
         }
+    }, null, function (scene, message, exception) {
+        console.error("Error loading model file:", message, exception);
+    });
+}
 
-        // Load the .glb file dynamically
-        const glbUrl = 'female_average.glb'; // Replace with your dynamic URL
-        loadGLBFile(glbUrl);
+// Update morph target influence dynamically
+function updateMorphTarget(meshName, targetName, newInfluence) {
+    const mesh = scene.getMeshByName(meshName);
+    if (mesh && mesh.morphTargetManager) {
+        const target = mesh.morphTargetManager.getTargetByName(targetName);
+        if (target) {
+            target.influence = newInfluence;
+            console.log(`Updated Morph Target: ${target.name}, New Influence: ${target.influence}`);
+        }
+    }
+}
+const BMI = 25;
+let sex = 'female';
+loadGLBFile(`${sex}_skinny.glb`);
+
+if (BMI >= 16 && BMI < 65) {
+    if (sex == "female" || sex == "non-binary" || sex == "non binary") {
+        if (BMI < 22) {
+           
+            // Load and render the scene
+            loadGLBFile(`${sex}_skinny.glb`);
+        } else if (BMI < 26) {
+           // Load and render the scene
+             loadGLBFile(`${sex}_average.glb`);
+        } else if (BMI < 36) {
+            // Load and render the scene
+            loadGLBFile(`${sex}_above.glb`);
+        } else if (BMI < 42) {
+             // Load and render the scene
+             loadGLBFile(`${sex}_OW`);
+        } else {
+              // Load and render the scene
+              loadGLBFile(`${sex}_morbid`);
+        }
+    } else if (sex == "male") {
+        if (BMI < 22) {
+            loadGLBFile(`${sex}_skinny.glb`);
+        } else if (BMI < 36) {
+           // Load and render the scene
+           loadGLBFile(`${sex}_average.glb`);
+        } else {
+              // Load and render the scene
+              loadGLBFile(`${sex}_OW`);
+        }
+    }
+}else{
+    alert(`You have entered a weight that is dangerously unhealthy. Please enter a weight between 90 - 400lbs or 40 - 226kg to continue.`);
+}
 
 
-        // Run the render loop
-        engine.runRenderLoop(function () {
-            scene.render();
-        });
+engine.runRenderLoop(() => scene.render());
+window.addEventListener('resize', () => engine.resize());
 
-        // Resize the canvas when the window is resized
-        window.addEventListener('resize', function () {
-            engine.resize();
-        });
+
+
 
         function storeShapeKeys(key, value) {
             // Store the user response in the userResponses object
