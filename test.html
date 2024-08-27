@@ -508,7 +508,7 @@
                                         <span class="tick-slider-tick"></span>
                                     </div>
                                     <input id="slider-arm-size" class="tick-slider-input slide-full topmost"
-                                        type="range" min="0" max="1" step="0.334" value="0" data-tick-step="1"
+                                        type="range" min="0" max="1" step="0.333" value="0" data-tick-step="1"
                                         data-tick-id="sliderTicks_15" name="arm_size_val" />
                                 </div>
                             </div>
@@ -888,6 +888,7 @@ window.addEventListener('resize', () => engine.resize());
             neckHeight: document.getElementById('slider-neck-height'),
             neckWidth: document.getElementById('slider-neck-width'),
             neckShape: document.getElementById('slider-neck-shape'),
+            chinShape: document.getElementById('slider-chin-shape'),
             shoulderHeight: document.getElementById('slider-shoulder-height'),
             shoulderWidth: document.getElementById('slider-shoulder-width'),
             armSize: document.getElementById('slider-arm-size'),
@@ -920,15 +921,15 @@ window.addEventListener('resize', () => engine.resize());
 
         // Shape key mappings
         const stomachShapeKeys = {
-            '0': 'stomach-width-pouch',     // Average, Curvy, Pouch, Muffintop
-            '1': 'stomach-width-pouch',
-            '2': 'stomach-width-pouch',
-            '3': 'stomach-width-pouch',
+            '0': 'stomach-width-average',     // Average, Curvy, Pouch, Muffintop
+            '1': 'stomach-width-average',
+            '2': 'stomach-width-spoon',
+            '3': 'stomach-width-spoon',
             '4': 'stomach-width-rect', // Rectangle
-            '5': 'stomach-width-spoon'      // Spoon
+            '5': 'stomach-width-pregnant'      // Spoon
         };
 
-        const allStomachShapeKeys = ['stomach-width-pouch', 'stomach-width-rect', 'stomach-width-spoon'];
+        const allStomachShapeKeys = ['stomach-width-average', 'stomach-width-spoon', 'stomach-width-rect','stomach-width-pregnant' ];
 
         // Event listener for stomach shape slider
         sliders.stomachShape.addEventListener('change', function () {
@@ -949,9 +950,9 @@ window.addEventListener('resize', () => engine.resize());
             allStomachShapeKeys.forEach(key => {
                 const value = (key === activeShapeKey) ? 1 : 0;
                 if (value) {
-                    updateMorphTarget('Shape_average_petite:High-poly_primitive0', key, Number(sliders.shoulderWidth.value));
-                    updateMorphTarget('Shape_average_petite:High-poly_primitive1', key, Number(sliders.shoulderWidth.value));
-                    updateMorphTarget('Shape_average_petite:High-poly_primitive2', key, Number(sliders.shoulderWidth.value));
+                    updateMorphTarget('Shape_average_petite:High-poly_primitive0', key, Number(sliders.stomachWidth.value));
+                    updateMorphTarget('Shape_average_petite:High-poly_primitive1', key, Number(sliders.stomachWidth.value));
+                    updateMorphTarget('Shape_average_petite:High-poly_primitive2', key, Number(sliders.stomachWidth.value));
                 }
 
             });
@@ -969,17 +970,21 @@ window.addEventListener('resize', () => engine.resize());
             updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'shoulder-width', Number(sliders.shoulderWidth.value));
             updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'shoulder-width', Number(sliders.shoulderWidth.value));
             let shapeKey;
-            alert(sliders.stomachShape.value);
+           
             switch (sliders.stomachShape.value) {
-              
-                case '4': // Rectangle
-                    shapeKey = 'stomach-width-rect';
+               
+                case '2': 
+                case '3':   
+                       shapeKey = 'stomach-width-spoon';
                     break;
-                case '5': // Spoon
-                    shapeKey = 'stomach-width-spoon';
+                case '4': // Spoon
+                      shapeKey = 'stomach-width-rect';
+                    break;
+               case '5': // Spoon
+                    shapeKey = 'stomach-width-pregnant';
                     break;
                 default:
-                    shapeKey = 'stomach-width-pregnant'; 
+                    shapeKey = 'stomach-width-average'; 
                 // Average, 
                // Curvy, 
                // Pouch, 
@@ -996,13 +1001,16 @@ window.addEventListener('resize', () => engine.resize());
                 updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-pregnant', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-pregnant', 0);
 
-                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-rect', 1);
-                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-rect', 1);
-                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-rect', 1);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-rect', Number(sliders.shoulderWidth.value) );
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-rect', Number(sliders.shoulderWidth.value) );
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-rect', Number(sliders.shoulderWidth.value) );
 
                 updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-spoon', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-spoon', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-spoon', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-average', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-average', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-average', 0);
             } else if (shapeKey == 'stomach-width-spoon') {
 
                 updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-pregnant', 0);
@@ -1013,13 +1021,17 @@ window.addEventListener('resize', () => engine.resize());
                 updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-rect', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-rect', 0);
 
-                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-spoon', 1);
-                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-spoon', 1);
-                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-spoon', 1);
-            }else{
-                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-pregnant', 1);
-                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-pregnant', 1);
-                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-pregnant', 1);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-spoon', Number(sliders.shoulderWidth.value));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-spoon', Number(sliders.shoulderWidth.value));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-spoon', Number(sliders.shoulderWidth.value));
+                
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-average', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-average', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-average', 0);
+            }else if(shapeKey == 'stomach-width-pregnant'){
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-pregnant', Number(sliders.shoulderWidth.value));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-pregnant', Number(sliders.shoulderWidth.value));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-pregnant', Number(sliders.shoulderWidth.value));
 
                 updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-rect', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-rect', 0);
@@ -1028,6 +1040,26 @@ window.addEventListener('resize', () => engine.resize());
                 updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-spoon', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-spoon', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-spoon', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-average', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-average', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-average', 0);
+
+
+            }else{
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-pregnant',0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-pregnant', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-pregnant', 0);
+
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-rect', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-rect', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-rect', 0);
+
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-spoon', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-spoon', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-spoon', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-average',  Number(sliders.shoulderWidth.value));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-average',  Number(sliders.shoulderWidth.value));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-average',  Number(sliders.shoulderWidth.value));
 
             }
         });
@@ -1041,15 +1073,21 @@ window.addEventListener('resize', () => engine.resize());
            
             switch (sliders.stomachShape.value) {
               
-                case '4': //Spoon 
+                case '2': 
+                case '3': 
+                //Spoon 
                 shapeKey = 'stomach-width-spoon';
                     break;
-                case '5': // Rectangle
+                case '4': // Rectangle
                 shapeKey = 'stomach-width-rect';
                    
                     break;
+                    case '5': // Rectangle
+                shapeKey = 'stomach-width-pregnant';
+                   
+                    break;
                 default:
-                    shapeKey = 'stomach-width-pregnant'; 
+                    shapeKey = 'stomach-width-average'; 
                 // Average, 
                // Curvy, 
                // Pouch, 
@@ -1073,6 +1111,10 @@ window.addEventListener('resize', () => engine.resize());
                 updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-spoon', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-spoon', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-spoon', 0);
+
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-average', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-average', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-average', 0);
             } else if (shapeKey == 'stomach-width-spoon') {
 
                 updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-pregnant', 0);
@@ -1086,7 +1128,11 @@ window.addEventListener('resize', () => engine.resize());
                 updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-spoon', Number(sliders.stomachWidth.value));
                 updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-spoon', Number(sliders.stomachWidth.value));
                 updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-spoon', Number(sliders.stomachWidth.value));
-            }else{
+
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-average', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-average', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-average', 0);
+            }else if(shapeKey == 'stomach-width-pregnant'){
                 updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-pregnant', Number(sliders.stomachWidth.value));
                 updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-pregnant', Number(sliders.stomachWidth.value));
                 updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-pregnant', Number(sliders.stomachWidth.value));
@@ -1098,6 +1144,29 @@ window.addEventListener('resize', () => engine.resize());
                 updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-spoon', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-spoon', 0);
                 updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-spoon', 0);
+
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-average',0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-average',0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-average',0);
+
+            }
+            
+            else{
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-pregnant',0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-pregnant',0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-pregnant',0);
+
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-rect', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-rect', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-rect', 0);
+
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-spoon', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-spoon', 0);
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-spoon', 0);
+
+                updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'stomach-width-average',Number(sliders.stomachWidth.value));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'stomach-width-average',Number(sliders.stomachWidth.value));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'stomach-width-average',Number(sliders.stomachWidth.value));
 
             }
         });
@@ -1118,10 +1187,32 @@ window.addEventListener('resize', () => engine.resize());
             });
         });
         sliders.neckShape.addEventListener('change', function () {
-            // let value = = neckShape.value * stomach_wdth_alue
-                updateMorphTarget('Shape_average_petite:High-poly_primitive0', morphName, Number(value));
-                updateMorphTarget('Shape_average_petite:High-poly_primitive1', morphName, Number(value));
-                updateMorphTarget('Shape_average_petite:High-poly_primitive2', morphName, Number(value));
+            
+          if(sliders.neckShape.value==0){
+            updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'neck-shape', Number(0));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'neck-shape', Number(0));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'neck-shape', Number(0));
+          
+          }else{
+            updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'neck-shape', Number(sliders.stomachWidth.value));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'neck-shape', Number(sliders.stomachWidth.value));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'neck-shape', Number(sliders.stomachWidth.value));
+          }
+                
+            });
+        sliders.chinShape.addEventListener('change', function () {
+            alert(sliders.chinShape.value);
+          if(sliders.chinShape.value==0){
+            updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'chin-shape', Number(0));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'chin-shape', Number(0));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'chin-shape', Number(0));
+          
+          }else{
+            updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'chin-shape', Number(1));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'chin-shape', Number(1));
+                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'chin-shape', Number(1));
+          }
+                
             });
         // Helper function to add change event listener for sliders
         function addChangeListener(slider, morphName) {
