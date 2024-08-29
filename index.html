@@ -449,7 +449,7 @@
                                 </div>
                             </div>
                             <div class="feature_group_wrap remove" id="trapezoidal-shape">
-                                <label for="name">Chin Shape :</label>
+                                <label for="slider-chin-shape">Chin Shape :</label>
                                 <div class="tick-slider">
                                     <div class="tick-slider-value-container">
 
@@ -465,7 +465,7 @@
                                 </div>
                             </div>
                             <div class="feature_group_wrap remove" id="trapezoidal-shape">
-                                <label for="name">Neck Rolls:</label>
+                                <label for="slider-neck-rolls">Neck Rolls:</label>
                                 <div class="tick-slider">
                                     <div class="tick-slider-value-container">
 
@@ -473,9 +473,9 @@
                                             <span class="tick-slider-tick"></span>
                                             <span class="tick-slider-tick"></span>
                                         </div>
-                                        <input id="slider-trap-shape" class="tick-slider-input slide-full topmost"
+                                        <input id="slider-neck-rolls" class="tick-slider-input slide-full topmost"
                                             type="range" min="0" max="1" step="1" value="0" data-tick-step="1"
-                                            data-tick-id="sliderTicks_12" name="neck_width_val" />
+                                            data-tick-id="sliderTicks_12" name="neck_rolls_val" />
                                     </div>
 
                                 </div>
@@ -902,12 +902,14 @@ window.addEventListener('resize', () => engine.resize());
             stomachWidth: document.getElementById('slider-stomach-width'),
             trimester: document.getElementById('slider-pregnant-size'),
             bottomShape: document.getElementById('slider-bottom-shape'),
-            bottomWidth: document.getElementById('slider-bottom-width')
+            bottomWidth: document.getElementById('slider-bottom-width'),
+            neckRolls: document.getElementById('slider-neck-rolls')
         };
 
 
         // Event listener for head shape slider
         sliders.headShape.addEventListener('change', function () {
+           
             // Update head shape morph targets based on slider value
             const shapes = ['oblong', 'round'];
             shapes.forEach((shape, index) => {
@@ -1200,20 +1202,7 @@ window.addEventListener('resize', () => engine.resize());
           }
                 
             });
-        sliders.chinShape.addEventListener('change', function () {
-            alert(sliders.chinShape.value);
-          if(sliders.chinShape.value==0){
-            updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'chin-shape', Number(0));
-                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'chin-shape', Number(0));
-                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'chin-shape', Number(0));
-          
-          }else{
-            updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'chin-shape', Number(1));
-                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'chin-shape', Number(1));
-                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'chin-shape', Number(1));
-          }
-                
-            });
+       
         // Helper function to add change event listener for sliders
         function addChangeListener(slider, morphName) {
             slider.addEventListener('change', function () {
@@ -1237,6 +1226,8 @@ window.addEventListener('resize', () => engine.resize());
         addChangeListener(sliders.hipSize, 'hips-size');
         addChangeListener(sliders.bottomWidth, 'bottom-width');
         addChangeListener(sliders.trimester, 'trimester');
+        addChangeListener(sliders.chinShape, 'chin-shape');
+       
 
         const BMI = 25;
 let sex = 'female';
