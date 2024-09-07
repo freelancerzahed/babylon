@@ -903,13 +903,12 @@ window.addEventListener('resize', () => engine.resize());
             trimester: document.getElementById('slider-pregnant-size'),
             bottomShape: document.getElementById('slider-bottom-shape'),
             bottomWidth: document.getElementById('slider-bottom-width'),
-            neckRolls: document.getElementById('slider-neck-rolls')
+            neckLayers: document.getElementById('slider-neck-rolls')
         };
 
 
         // Event listener for head shape slider
         sliders.headShape.addEventListener('change', function () {
-           
             // Update head shape morph targets based on slider value
             const shapes = ['oblong', 'round'];
             shapes.forEach((shape, index) => {
@@ -1227,6 +1226,7 @@ window.addEventListener('resize', () => engine.resize());
         addChangeListener(sliders.bottomWidth, 'bottom-width');
         addChangeListener(sliders.trimester, 'trimester');
         addChangeListener(sliders.chinShape, 'chin-shape');
+        addChangeListener(sliders.neckLayers, 'neck-layers');
        
 
         const BMI = 25;

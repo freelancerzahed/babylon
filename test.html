@@ -449,7 +449,7 @@
                                 </div>
                             </div>
                             <div class="feature_group_wrap remove" id="trapezoidal-shape">
-                                <label for="name">Chin Shape :</label>
+                                <label for="slider-chin-shape">Chin Shape :</label>
                                 <div class="tick-slider">
                                     <div class="tick-slider-value-container">
 
@@ -465,7 +465,7 @@
                                 </div>
                             </div>
                             <div class="feature_group_wrap remove" id="trapezoidal-shape">
-                                <label for="name">Neck Rolls:</label>
+                                <label for="slider-neck-rolls">Neck Rolls:</label>
                                 <div class="tick-slider">
                                     <div class="tick-slider-value-container">
 
@@ -473,9 +473,9 @@
                                             <span class="tick-slider-tick"></span>
                                             <span class="tick-slider-tick"></span>
                                         </div>
-                                        <input id="slider-trap-shape" class="tick-slider-input slide-full topmost"
+                                        <input id="slider-neck-rolls" class="tick-slider-input slide-full topmost"
                                             type="range" min="0" max="1" step="1" value="0" data-tick-step="1"
-                                            data-tick-id="sliderTicks_12" name="neck_width_val" />
+                                            data-tick-id="sliderTicks_12" name="neck_rolls_val" />
                                     </div>
 
                                 </div>
@@ -759,34 +759,41 @@
 // } else {
 //     alert("WebGL is not supported on your device or browser.");
 // }
-
-        
- // Initialize Babylon.js
+// Initialize Babylon.js
 const canvas = document.getElementById('renderCanvas');
 const engine = new BABYLON.Engine(canvas, true);
 const scene = new BABYLON.Scene(engine);
 
-
 if (BABYLON.Engine.isSupported()) {
-  
     // Rest of your code...
 } else {
     alert("WebGL is not supported on your device or browser.");
 }
 
-// Custom camera class without zoom and rotation
-class NoZoomCamera extends BABYLON.ArcRotateCamera {
-    constructor(name, alpha, beta, radius, target, scene) {
-        super(name, alpha, beta, radius, target, scene);
-        this.inputs.removeByType("ArcRotateCameraMouseWheelInput");
-        this.inputs.removeByType("ArcRotateCameraPointersInput");
+// Custom orthographic camera class without zoom and rotation
+class NoZoomOrthoCamera extends BABYLON.FreeCamera {
+    constructor(name, position, scene) {
+        super(name, position, scene);
+        this.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+
+        // Disable zoom and rotation
+        this.inputs.clear(); // Clear all inputs (removes mouse and keyboard inputs)
     }
 }
 
-// Set up the camera
-const camera = new NoZoomCamera("noZoomCamera", Math.PI / 2, Math.PI / 2, 90, new BABYLON.Vector3(0, 30, 0), scene);
-// camera.attachControl(canvas, true);
-// camera.lowerRadiusLimit = camera.upperRadiusLimit = camera.radius;
+// Set up the orthographic camera
+const camera = new NoZoomOrthoCamera("noZoomOrthoCamera", new BABYLON.Vector3(0, 0, 1000), scene);
+
+// Configure orthographic size
+const aspectRatio = engine.getRenderWidth() / engine.getRenderHeight();
+const orthoSize = 35; // Adjust for zoom level (like your original radius setting)
+camera.orthoLeft = -orthoSize * aspectRatio;
+camera.orthoRight = orthoSize * aspectRatio;
+camera.orthoTop = orthoSize;
+camera.orthoBottom = -orthoSize;
+
+// Attach the camera to the canvas (no need for controls as inputs are removed)
+camera.setTarget(BABYLON.Vector3.Zero());
 
 // Create lighting
 new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 1), scene);
@@ -808,34 +815,24 @@ function loadGLBFile(url) {
         let morphTargetsFound = false;
         scene.meshes.forEach(mesh => {
             const model = scene.getMeshByName(mesh.name);
-if (model) {
-    // model.rotation = new BABYLON.Vector3(30, 0, 0);
+            if (model) {
+                // model.rotation = new BABYLON.Vector3(30, 0, 0);
+                model.position.y = -20
+                const bodyRearBtn = document.getElementById("bodyRearBtn");
+                if (bodyRearBtn) {
+                    bodyRearBtn.addEventListener('click', () => {
+                        // Toggle between 0 and 180 degrees
+                        model.rotation.y = model.rotation.y === 0 ? BABYLON.Tools.ToRadians(180) : 0;
+                    });
+                } else {
+                    console.error('Element with ID "bodyRearBtn" not found.');
+                }
 
-    const bodyRearBtn = document.getElementById("bodyRearBtn");
-    if (bodyRearBtn) {
-        bodyRearBtn.addEventListener('click', () => {
-            // Toggle between 0 and 180 degrees
-            model.rotation.y = model.rotation.y === 0 ? BABYLON.Tools.ToRadians(180) : 0;
-        });
-    } else {
-        console.error('Element with ID "bodyRearBtn" not found.');
-    }
+                // Set the pivot point and position
+                model.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+            }
 
-
-    // script.js File 
-  
-      
-    // Set the pivot point and position
-   
-    // model.position = new BABYLON.Vector3(0, -30, 0);
-    model.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-   
-  
-
-}
-
-
-      console.log(`Mesh: ${mesh.name}`);
+            console.log(`Mesh: ${mesh.name}`);
             if (mesh.morphTargetManager) {
                 morphTargetsFound = true;
                 const manager = mesh.morphTargetManager;
@@ -868,12 +865,8 @@ function updateMorphTarget(meshName, targetName, newInfluence) {
     }
 }
 
-
-
 engine.runRenderLoop(() => scene.render());
 window.addEventListener('resize', () => engine.resize());
-
-
 
 
         function storeShapeKeys(key, value) {
@@ -902,7 +895,8 @@ window.addEventListener('resize', () => engine.resize());
             stomachWidth: document.getElementById('slider-stomach-width'),
             trimester: document.getElementById('slider-pregnant-size'),
             bottomShape: document.getElementById('slider-bottom-shape'),
-            bottomWidth: document.getElementById('slider-bottom-width')
+            bottomWidth: document.getElementById('slider-bottom-width'),
+            neckLayers: document.getElementById('slider-neck-rolls')
         };
 
 
@@ -1200,20 +1194,7 @@ window.addEventListener('resize', () => engine.resize());
           }
                 
             });
-        sliders.chinShape.addEventListener('change', function () {
-            alert(sliders.chinShape.value);
-          if(sliders.chinShape.value==0){
-            updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'chin-shape', Number(0));
-                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'chin-shape', Number(0));
-                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'chin-shape', Number(0));
-          
-          }else{
-            updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'chin-shape', Number(1));
-                updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'chin-shape', Number(1));
-                updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'chin-shape', Number(1));
-          }
-                
-            });
+       
         // Helper function to add change event listener for sliders
         function addChangeListener(slider, morphName) {
             slider.addEventListener('change', function () {
@@ -1237,6 +1218,9 @@ window.addEventListener('resize', () => engine.resize());
         addChangeListener(sliders.hipSize, 'hips-size');
         addChangeListener(sliders.bottomWidth, 'bottom-width');
         addChangeListener(sliders.trimester, 'trimester');
+        addChangeListener(sliders.chinShape, 'chin-shape');
+        addChangeListener(sliders.neckLayers, 'neck-layers');
+       
 
         const BMI = 25;
 let sex = 'female';
