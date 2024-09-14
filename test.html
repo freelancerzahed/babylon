@@ -376,7 +376,7 @@
 
                                     </div>
                                     <input id="slider-head-shape" class="tick-slider-input slide-full topmost"
-                                        type="range" min="0" max="2" step="1" value="0" data-tick-step="1"
+                                        type="range" min="0" max="2" step="1" value="0" data-tick-step="0.25"
                                         data-tick-id="sliderTicks_8" name="head_shape_val" />
                                 </div>
                             </div>
@@ -393,7 +393,7 @@
 
                                     </div>
                                     <input id="slider-head-size" class="tick-slider-input slide-full topmost"
-                                        type="range" min="0" max="1" step="0.25" value="0" data-tick-step="1"
+                                        type="range" min="0" max="1" step="0.25" value="0" data-tick-step="0.25"
                                         data-tick-id="sliderTicks_9" name="head_size_val" />
                                 </div>
                             </div>
@@ -640,6 +640,7 @@
                                         <span class="tick-slider-tick"></span>
                                         <span class="tick-slider-tick"></span>
                                         <span class="tick-slider-tick"></span>
+                                        <span class="tick-slider-tick"></span>
                                     </div>
                                     <input id="slider-leg-size" class="tick-slider-input slide-full topmost"
                                         type="range" min="0" max="1" step="0.25" value="0" data-tick-step="1"
@@ -704,23 +705,7 @@
                                         data-tick-id="sliderTicks_19" name="bottom_width_val" />
                                 </div>
                             </div>
-                            <div class="feature_group_wrap" id="bottom-back">
-                                <label for="slider-bottom-back">Bottom Back:</label>
-                                <div class="tick-slider">
-                                    <div id="sliderTicks_20" class="tick-slider-tick-container">
-                                        <span class="tick-slider-tick"></span>
-                                        <span class="tick-slider-tick"></span>
-                                        <span class="tick-slider-tick"></span>
-                                        <span class="tick-slider-tick"></span>
-                                        <span class="tick-slider-tick"></span>
-                                        <span class="tick-slider-tick"></span>
-
-                                    </div>
-                                    <input id="slider-bottom-back" class="tick-slider-input slide-full topmost"
-                                        type="range" min="0" max="5" step="1" value="0" data-tick-step="1"
-                                        data-tick-id="sliderTicks_6" name="hip_size_val" />
-                                </div>
-                            </div>
+                          
                         </div>
                     </div>
               
@@ -759,116 +744,142 @@
 // } else {
 //     alert("WebGL is not supported on your device or browser.");
 // }
-// Initialize Babylon.js
-const canvas = document.getElementById('renderCanvas');
-const engine = new BABYLON.Engine(canvas, true);
-const scene = new BABYLON.Scene(engine);
+  // Initialize Babylon.js 
+  const canvas = document.getElementById('renderCanvas');
+        const engine = new BABYLON.Engine(canvas, true);
+        const scene = new BABYLON.Scene(engine);
 
-if (BABYLON.Engine.isSupported()) {
-    // Rest of your code...
-} else {
-    alert("WebGL is not supported on your device or browser.");
-}
+        if (BABYLON.Engine.isSupported()) {
+            console.log("WebGL is supported!");
+        } else {
+            alert("WebGL is not supported on your device or browser.");
+        }
 
-// Custom orthographic camera class without zoom and rotation
-class NoZoomOrthoCamera extends BABYLON.FreeCamera {
-    constructor(name, position, scene) {
-        super(name, position, scene);
-        this.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+        // Custom orthographic camera class without zoom and rotation
+        class NoZoomOrthoCamera extends BABYLON.FreeCamera {
+            constructor(name, position, scene) {
+                super(name, position, scene);
+                this.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
 
-        // Disable zoom and rotation
-        this.inputs.clear(); // Clear all inputs (removes mouse and keyboard inputs)
-    }
-}
+                // Disable zoom and rotation
+                this.inputs.clear(); // Clear all inputs (removes mouse and keyboard inputs)
+            }
+        }
 
-// Set up the orthographic camera
-const camera = new NoZoomOrthoCamera("noZoomOrthoCamera", new BABYLON.Vector3(0, 0, 1000), scene);
+        // Set up the orthographic camera
+        const camera = new NoZoomOrthoCamera("noZoomOrthoCamera", new BABYLON.Vector3(0, 0, 1000), scene);
 
-// Configure orthographic size
-const aspectRatio = engine.getRenderWidth() / engine.getRenderHeight();
-const orthoSize = 35; // Adjust for zoom level (like your original radius setting)
-camera.orthoLeft = -orthoSize * aspectRatio;
-camera.orthoRight = orthoSize * aspectRatio;
-camera.orthoTop = orthoSize;
-camera.orthoBottom = -orthoSize;
+        // Configure orthographic size
+        const aspectRatio = engine.getRenderWidth() / engine.getRenderHeight();
+        const orthoSize = 35; // Adjust for zoom level (like your original radius setting)
+        camera.orthoLeft = -orthoSize * aspectRatio;
+        camera.orthoRight = orthoSize * aspectRatio;
+        camera.orthoTop = orthoSize;
+        camera.orthoBottom = -orthoSize;
 
-// Attach the camera to the canvas (no need for controls as inputs are removed)
-camera.setTarget(BABYLON.Vector3.Zero());
+        // Attach the camera to the canvas (no need for controls as inputs are removed)
+        camera.setTarget(BABYLON.Vector3.Zero());
 
-// Create lighting
-new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 1), scene);
+        // Create lighting
+        const hemisphericLight = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 1), scene);
+        hemisphericLight.intensity = 0.8;
 
-// Load the .glb file and process the model
-function loadGLBFile(url) {
-    BABYLON.SceneLoader.Append("", url, scene, function (scene) {
-        console.log("Model file loaded successfully");
+        // Add a directional light for dynamic shading
+        const directionalLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(-1, -2, -1), scene);
+        directionalLight.intensity = 1.0;
 
-        // Process animations and morph targets
-        scene.animationGroups.forEach(group => {
-            console.log(`Animation Group: ${group.name}`);
-            group.targetedAnimations.forEach(({ target, animation }) => {
-                console.log(`Target: ${target.name}, Property: ${animation.targetProperty}`);
-                animation.getKeys().forEach(key => console.log(`Frame: ${key.frame}, Value: ${key.value}`));
-            });
-        });
+        // Load the .glb file and process the model
+        function loadGLBFile(url) {
+            BABYLON.SceneLoader.Append("", url, scene, function (scene) {
+                console.log("Model file loaded successfully");
 
-        let morphTargetsFound = false;
-        scene.meshes.forEach(mesh => {
-            const model = scene.getMeshByName(mesh.name);
-            if (model) {
-                // model.rotation = new BABYLON.Vector3(30, 0, 0);
-                model.position.y = -20
-                const bodyRearBtn = document.getElementById("bodyRearBtn");
-                if (bodyRearBtn) {
-                    bodyRearBtn.addEventListener('click', () => {
-                        // Toggle between 0 and 180 degrees
-                        model.rotation.y = model.rotation.y === 0 ? BABYLON.Tools.ToRadians(180) : 0;
+                // Process animations and morph targets
+                scene.animationGroups.forEach(group => {
+                    console.log(`Animation Group: ${group.name}`);
+                    group.targetedAnimations.forEach(({ target, animation }) => {
+                        console.log(`Target: ${target.name}, Property: ${animation.targetProperty}`);
+                        animation.getKeys().forEach(key => console.log(`Frame: ${key.frame}, Value: ${key.value}`));
                     });
-                } else {
-                    console.error('Element with ID "bodyRearBtn" not found.');
+                });
+
+                let morphTargetsFound = false;
+                scene.meshes.forEach(mesh => {
+                    const model = scene.getMeshByName(mesh.name);
+                    if (model) {
+                        model.position.y = -20;
+
+                        const bodyRearBtn = document.getElementById("bodyRearBtn");
+                        if (bodyRearBtn) {
+                            bodyRearBtn.addEventListener('click', () => {
+                                if (model.rotation.y === 0) {
+                                    model.rotation.y = BABYLON.Tools.ToRadians(-90);
+                                } else if (model.rotation.y === BABYLON.Tools.ToRadians(-90)) {
+                                    model.rotation.y = BABYLON.Tools.ToRadians(180);
+                                } else {
+                                    model.rotation.y = BABYLON.Tools.ToRadians(0);
+                                }
+                            });
+                        } else {
+                            console.error('Element with ID "bodyRearBtn" not found.');
+                        }
+
+                        // Set the pivot point and position
+                        model.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+                    }
+
+                    // Log material info for debugging
+                    const material = mesh.material;
+                    if (material) {
+                        console.log(`Material for ${mesh.name}:`, material);
+                        if (material.diffuseTexture) {
+                            console.log(`Diffuse Texture:`, material.diffuseTexture);
+                        }
+                    } else {
+                        console.log(`${mesh.name} has no material`);
+                    }
+
+                    // Check for morph targets
+                    if (mesh.morphTargetManager) {
+                        morphTargetsFound = true;
+                        const manager = mesh.morphTargetManager;
+                        console.log(`Number of Morph Targets: ${manager.numTargets}`);
+                        for (let i = 0; i < manager.numTargets; i++) {
+                            const target = manager.getTarget(i);
+                            console.log(`Morph Target: ${target.name}, Influence: ${target.influence}`);
+                        }
+                    }
+                });
+
+                if (!morphTargetsFound) {
+                    console.log("No morph targets found in the meshes.");
                 }
+            }, null, function (scene, message, exception) {
+                console.error("Error loading model file:", message, exception);
+            });
+        }
 
-                // Set the pivot point and position
-                model.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-            }
-
-            console.log(`Mesh: ${mesh.name}`);
-            if (mesh.morphTargetManager) {
-                morphTargetsFound = true;
-                const manager = mesh.morphTargetManager;
-                console.log(`Number of Morph Targets: ${manager.numTargets}`);
-                for (let i = 0; i < manager.numTargets; i++) {
-                    const target = manager.getTarget(i);
-                    console.log(`Morph Target: ${target.name}, Influence: ${target.influence}`);
-                    storeShapeKeys(target.name, target.influence);
+        // Update morph target influence dynamically
+        function updateMorphTarget(meshName, targetName, newInfluence) {
+            const mesh = scene.getMeshByName(meshName);
+            if (mesh && mesh.morphTargetManager) {
+                const target = mesh.morphTargetManager.getTargetByName(targetName);
+                if (target) {
+                    target.influence = newInfluence;
+                    console.log(`Updated Morph Target: ${target.name}, New Influence: ${target.influence}`);
                 }
             }
-        });
-
-        if (!morphTargetsFound) {
-            console.log("No morph targets found in the meshes.");
         }
-    }, null, function (scene, message, exception) {
-        console.error("Error loading model file:", message, exception);
-    });
-}
 
-// Update morph target influence dynamically
-function updateMorphTarget(meshName, targetName, newInfluence) {
-    const mesh = scene.getMeshByName(meshName);
-    if (mesh && mesh.morphTargetManager) {
-        const target = mesh.morphTargetManager.getTargetByName(targetName);
-        if (target) {
-            target.influence = newInfluence;
-            console.log(`Updated Morph Target: ${target.name}, New Influence: ${target.influence}`);
-        }
-    }
-}
+       
 
-engine.runRenderLoop(() => scene.render());
-window.addEventListener('resize', () => engine.resize());
+        // Show the Babylon.js inspector for debugging
+        // scene.debugLayer.show();
 
+        // Render loop
+        engine.runRenderLoop(() => scene.render());
 
+        // Handle window resize
+        window.addEventListener('resize', () => engine.resize());
         function storeShapeKeys(key, value) {
             // Store the user response in the userResponses object
             shapeKeys[key] = value;
@@ -903,6 +914,8 @@ window.addEventListener('resize', () => engine.resize());
         // Event listener for head shape slider
         sliders.headShape.addEventListener('change', function () {
             // Update head shape morph targets based on slider value
+
+            console.log(sliders.headShape.value)
             const shapes = ['oblong', 'round'];
             shapes.forEach((shape, index) => {
                 const value = (sliders.headShape.value == index + 1) ? 1 : 0;
@@ -924,7 +937,8 @@ window.addEventListener('resize', () => engine.resize());
         };
 
         const allStomachShapeKeys = ['stomach-width-average', 'stomach-width-spoon', 'stomach-width-rect','stomach-width-pregnant' ];
-
+// Initially disable the trimester slider
+sliders.trimester.disabled = true;
         // Event listener for stomach shape slider
         sliders.stomachShape.addEventListener('change', function () {
             // Update stomach shape morph targets based on slider value
@@ -939,7 +953,12 @@ window.addEventListener('resize', () => engine.resize());
 
             // Get the active shape key based on stomach shape selection
             const activeShapeKey = stomachShapeKeys[sliders.stomachShape.value] || 'stomach-width-pouch';
-
+ // Enable/disable trimester slider based on stomach shape value
+ if (sliders.stomachShape.value == 5) { // Pregnant shape
+        sliders.trimester.disabled = false; // Enable trimester slider
+    } else {
+        sliders.trimester.disabled = true;  // Disable trimester slider
+    }
             // Update all stomach width shape keys
             allStomachShapeKeys.forEach(key => {
                 const value = (key === activeShapeKey) ? 1 : 0;
