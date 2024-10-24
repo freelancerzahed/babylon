@@ -424,10 +424,12 @@
                                             <span class="tick-slider-tick"></span>
                                             <span class="tick-slider-tick"></span>
                                             <span class="tick-slider-tick"></span>
+                                            <span class="tick-slider-tick"></span>
+                                            <span class="tick-slider-tick"></span>
 
                                         </div>
                                         <input id="slider-neck-width" class="tick-slider-input slide-full topmost"
-                                            type="range" min="0" max="1" step="0.5" value="0" data-tick-step="1"
+                                            type="range" min="0" max="1" step="0.25" value="0" data-tick-step="1"
                                             data-tick-id="sliderTicks_12" name="neck_width_val" />
                                     </div>
 
@@ -1264,25 +1266,6 @@ sliders.trimester.disabled = true;
 
 
 
-     function getMaxNeckHeight(neckWidth) {
-     
-     
-            let maxNeckHeight;
-
-  // Map neck width to maximum neck height
-  if (neckWidth === 0.75) {
-    maxNeckHeight = 0.5;
-  } else if (neckWidth === 1.0) {
-    maxNeckHeight = 0.75;
-  } else {
-    maxNeckHeight = "Invalid neck width";  // Default case for unsupported neck widths
-  }
-
-  console.log(`For Neck Width: ${neckWidth}, Max Neck Height is: ${maxNeckHeight}`);
-  return maxNeckHeight;
-}
-
-
  function skinnyModeler() { 
 
     sliders.headSize.addEventListener('change', function () {
@@ -1297,6 +1280,45 @@ sliders.trimester.disabled = true;
             updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'reconsile_lg_head', 0);
         }
     });
+
+const neckHeightTicks = document.getElementById('sliderTicks_11');
+
+// Function to update neck height slider's max value and ticks
+function updateNeckHeight(neckWidthValue) {
+    let neckHeightMax, tickCount;
+
+    if (neckWidthValue === 0.75) {
+        neckHeightMax = 0.6;
+        tickCount = 4; // Set number of ticks for max 0.6
+    } else if (neckWidthValue === 1.0) {
+        neckHeightMax = 0.8;
+        tickCount = 5; // Set number of ticks for max 0.8
+    } else {
+        neckHeightMax = 1; // Default reset value
+        tickCount = 6;
+    }
+
+    // Update the neck height slider's max value
+    sliders.neckHeight.max = neckHeightMax;
+
+    // Clear the existing ticks inside sliderTicks_11
+    neckHeightTicks.innerHTML = '';
+
+    // Dynamically create new ticks based on the updated max value
+    for (let i = 0; i < tickCount; i++) {
+        const tick = document.createElement('span');
+        tick.classList.add('tick-slider-tick');
+        neckHeightTicks.appendChild(tick);
+    }
+}
+
+// Add event listener for neck width changes
+sliders.neckWidth.addEventListener('input', function () {
+    const neckWidthValue = parseFloat(sliders.neckWidth.value);
+    updateNeckHeight(neckWidthValue);
+});
+
+
 
     sliders.neckHeight.addEventListener('change', function () { 
         const neckHeight = sliders.neckHeight.value;
@@ -1451,7 +1473,7 @@ function averageModeler() {
 
     sliders.neckHeight.addEventListener('change', function () { 
         let neckHeight = sliders.neckHeight.value;
-        console.log('Neck Height',neckHeight);
+     
      if (neckHeight == 0.0) {
       
         updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'neck_layers', 1);
@@ -1485,6 +1507,41 @@ function averageModeler() {
 
    
     });
+
+    const neckHeightTicks = document.getElementById('sliderTicks_11');
+
+// Function to update neck height slider's max value and ticks
+function updateNeckHeight(neckWidthValue) {
+    let neckHeightMax, tickCount;
+
+    if (neckWidthValue >= 0.75) {
+        neckHeightMax = 0.6;
+        tickCount = 4; // Set number of ticks for max 0.6
+    }else {
+        neckHeightMax = 1; // Default reset value
+        tickCount = 6;
+    }
+
+    // Update the neck height slider's max value
+    sliders.neckHeight.max = neckHeightMax;
+
+    // Clear the existing ticks inside sliderTicks_11
+    neckHeightTicks.innerHTML = '';
+
+    // Dynamically create new ticks based on the updated max value
+    for (let i = 0; i < tickCount; i++) {
+        const tick = document.createElement('span');
+        tick.classList.add('tick-slider-tick');
+        neckHeightTicks.appendChild(tick);
+    }
+}
+
+// Add event listener for neck width changes
+sliders.neckWidth.addEventListener('input', function () {
+    const neckWidthValue = parseFloat(sliders.neckWidth.value);
+    updateNeckHeight(neckWidthValue);
+});
+
        // Attach the trapezoid update function to the sliders
        sliders.shoulderWidth.addEventListener('change', updateTrapezoidShape);
     sliders.shoulderHeight.addEventListener('change', updateTrapezoidShape);
@@ -1551,22 +1608,85 @@ function averageModeler() {
         updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'trapezoid', trapezoid);
         updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'trapezoid', trapezoid);
  }
-    // Arm size based on shoulder width
-    // if (shoulderWidth > 0.25) {
-    //     maxArmSize = 1.0;
-    // } else {
-    //     maxArmSize = 0.75;
-    // }
+
+const armSizeTicks = document.getElementById('sliderTicks_21');
+
+// Function to update arm size slider's max value and ticks
+function updateArmSize(shoulderWidthValue) {
+    let armSizeMax, tickCount;
+
+    if (shoulderWidthValue <= 0.25) {
+        armSizeMax = 0.75;
+        tickCount = 4; // Set number of ticks for max 0.75
+    } else {
+        armSizeMax = 1.0;
+        tickCount = 5; // Set number of ticks for max 1.0
+    }
+
+    // Update the arm size slider's max value
+    sliders.armSize.max = armSizeMax;
+
+    // Clear the existing ticks inside sliderTicks_21
+    armSizeTicks.innerHTML = '';
+
+    // Dynamically create new ticks based on the updated max value
+    for (let i = 0; i < tickCount; i++) {
+        const tick = document.createElement('span');
+        tick.classList.add('tick-slider-tick');
+        armSizeTicks.appendChild(tick);
+    }
+}
+
+// Add event listener for shoulder width changes
+sliders.shoulderWidth.addEventListener('input', function () {
+    const shoulderWidthValue = parseFloat(sliders.shoulderWidth.value);
+    updateArmSize(shoulderWidthValue);
+});
+
 
    
 }
 
 
 function overweightModeler(){
+    const neckHeightTicks = document.getElementById('sliderTicks_11');
+
+// Function to update neck height slider's max value and ticks
+function updateNeckHeight(neckWidthValue) {
+    let neckHeightMax, tickCount;
+
+    if (neckWidthValue >= 0.75) {
+        neckHeightMax = 0.6;
+        tickCount = 4; // Set number of ticks for max 0.6
+    }else {
+        neckHeightMax = 1; // Default reset value
+        tickCount = 6;
+    }
+
+    // Update the neck height slider's max value
+    sliders.neckHeight.max = neckHeightMax;
+
+    // Clear the existing ticks inside sliderTicks_11
+    neckHeightTicks.innerHTML = '';
+
+    // Dynamically create new ticks based on the updated max value
+    for (let i = 0; i < tickCount; i++) {
+        const tick = document.createElement('span');
+        tick.classList.add('tick-slider-tick');
+        neckHeightTicks.appendChild(tick);
+    }
+}
+
+// Add event listener for neck width changes
+sliders.neckWidth.addEventListener('input', function () {
+    const neckWidthValue = parseFloat(sliders.neckWidth.value);
+    updateNeckHeight(neckWidthValue);
+});
+    
   // Attach the trapezoid update function to the sliders
-   sliders.shoulderWidth.addEventListener('change', updateTrapezoidShape);
-    sliders.shoulderHeight.addEventListener('change', updateTrapezoidShape);
-    sliders.neckWidth.addEventListener('change', updateTrapezoidShape);
+   sliders.shoulderWidth.addEventListener('change', calculateTrapezoid);
+    sliders.shoulderHeight.addEventListener('change', calculateTrapezoid);
+    sliders.neckWidth.addEventListener('change', calculateTrapezoid);
 
     function calculateTrapezoid() {
     let neckWidth = sliders.neckWidth.value;
@@ -1662,9 +1782,75 @@ function overweightModeler(){
 }
 
 
+const armSizeTicks = document.getElementById('sliderTicks_21');
+
+// Function to update arm size slider's max value and ticks
+function updateArmSize(shoulderWidthValue) {
+    let armSizeMax, tickCount;
+
+    if (shoulderWidthValue <= 0.25) {
+        armSizeMax = 0.75;
+        tickCount = 4; // Set number of ticks for max 0.75
+    } else {
+        armSizeMax = 1.0;
+        tickCount = 5; // Set number of ticks for max 1.0
+    }
+
+    // Update the arm size slider's max value
+    sliders.armSize.max = armSizeMax;
+
+    // Clear the existing ticks inside sliderTicks_21
+    armSizeTicks.innerHTML = '';
+
+    // Dynamically create new ticks based on the updated max value
+    for (let i = 0; i < tickCount; i++) {
+        const tick = document.createElement('span');
+        tick.classList.add('tick-slider-tick');
+        armSizeTicks.appendChild(tick);
+    }
+}
+
+// Add event listener for shoulder width changes
+sliders.shoulderWidth.addEventListener('input', function () {
+    const shoulderWidthValue = parseFloat(sliders.shoulderWidth.value);
+    updateArmSize(shoulderWidthValue);
+});
 }
 
 function obeseModeler(){
+    const neckHeightTicks = document.getElementById('sliderTicks_11');
+
+// Function to update neck height slider's max value and ticks
+function updateNeckHeight(neckWidthValue) {
+    let neckHeightMax, tickCount;
+
+    if (neckWidthValue >= 0.75) {
+        neckHeightMax = 0.6;
+        tickCount = 4; // Set number of ticks for max 0.6
+    }else {
+        neckHeightMax = 1; // Default reset value
+        tickCount = 6;
+    }
+
+    // Update the neck height slider's max value
+    sliders.neckHeight.max = neckHeightMax;
+
+    // Clear the existing ticks inside sliderTicks_11
+    neckHeightTicks.innerHTML = '';
+
+    // Dynamically create new ticks based on the updated max value
+    for (let i = 0; i < tickCount; i++) {
+        const tick = document.createElement('span');
+        tick.classList.add('tick-slider-tick');
+        neckHeightTicks.appendChild(tick);
+    }
+}
+
+// Add event listener for neck width changes
+sliders.neckWidth.addEventListener('input', function () {
+    const neckWidthValue = parseFloat(sliders.neckWidth.value);
+    updateNeckHeight(neckWidthValue);
+});
     sliders.shoulderWidth.addEventListener('change', updateTrapezoidShape);
     sliders.shoulderHeight.addEventListener('change', updateTrapezoidShape);
     sliders.neckWidth.addEventListener('change', updateTrapezoidShape);
@@ -1757,6 +1943,41 @@ function obeseModeler(){
        updateMorphTarget('Shape_average_petite:High-poly_primitive0', 'trapezoid', trapezoid);
         updateMorphTarget('Shape_average_petite:High-poly_primitive1', 'trapezoid', trapezoid);
         updateMorphTarget('Shape_average_petite:High-poly_primitive2', 'trapezoid', trapezoid);
+
+        // Function to update arm size slider's max value and ticks
+function updateArmSize(shoulderWidthValue) {
+    let armSizeMax, tickCount;
+
+    if (shoulderWidthValue <= 0.25) {
+        armSizeMax = 0.5;
+        tickCount = 3; // Set number of ticks for max 0.5
+    } else if (shoulderWidthValue <= 0.625) {
+        armSizeMax = 0.75;
+        tickCount = 4; // Set number of ticks for max 0.75
+    } else {
+        armSizeMax = 1.0;
+        tickCount = 5; // Set number of ticks for max 1.0
+    }
+
+    // Update the arm size slider's max value
+    sliders.armSize.max = armSizeMax;
+
+    // Clear the existing ticks inside sliderTicks_21
+    sliders.armSizeTicks.innerHTML = '';
+
+    // Dynamically create new ticks based on the updated max value
+    for (let i = 0; i < tickCount; i++) {
+        const tick = document.createElement('span');
+        tick.classList.add('tick-slider-tick');
+        sliders.armSizeTicks.appendChild(tick);
+    }
+}
+
+// Add event listener for shoulder width changes
+sliders.shoulderWidth.addEventListener('input', function () {
+    const shoulderWidthValue = parseFloat(sliders.shoulderWidth.value);
+    updateArmSize(shoulderWidthValue);
+});
 }
 
 
@@ -1770,7 +1991,7 @@ function obeseModeler(){
 
 }
 
-        const BMI = 24;
+        const BMI = 20;
 let sex = 'female';
 
 
